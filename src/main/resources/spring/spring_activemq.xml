@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans 
+        http://www.springframework.org/schema/beans/spring-beans-2.5.xsd 
+        http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context-2.5.xsd"
+    default-autowire="byName">
+
+
+    <!--创建连接工厂-->
+<!--     <bean id="connectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+        <property name="brokerURL" value="${im.activemq.url}"></property>
+        <property name="userName" value="${im.activemq.username}"></property>
+        <property name="password" value="${im.activemq.password}"></property>
+    </bean> -->
+    
+    <bean id="connectionFactory" class="org.apache.activemq.pool.PooledConnectionFactory" destroy-method="stop">  
+        <property name="connectionFactory">
+            <bean class="org.apache.activemq.ActiveMQConnectionFactory">
+                <property name="brokerURL" value="${im.activemq.url}"></property>
+                <property name="userName" value="${im.activemq.username}"></property>
+                <property name="password" value="${im.activemq.password}"></property>
+            </bean>
+        </property>
+        <property name="maxConnections" value="${im.activemq.max.connections}"></property>
+    </bean>
+    
+    
+    <!-- WEB应用消息队列 -->
+    <bean id="queueWebApp" class="org.apache.activemq.command.ActiveMQQueue">
+        <constructor-arg index="0" value="${im.activemq.queue.webapp}"></constructor-arg>
+    </bean>
+    
+    <!-- 群应用消息队列 -->
+    <bean id="queueGroupApp" class="org.apache.activemq.command.ActiveMQQueue">
+        <constructor-arg index="0" value="${im.activemq.queue.grapp}"></constructor-arg>
+    </bean>
+
+    <!-- 群操作通知消息队列 -->
+    <bean id="queueGroupAction" class="org.apache.activemq.command.ActiveMQQueue">
+        <constructor-arg index="0" value="${im.activemq.queue.groupaction}"></constructor-arg>
+    </bean>
+    
+    <!--WEB应用 JMS模版-->
+    <bean id="jmsTemplateWebApp" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="connectionFactory"></property>
+        <property name="defaultDestination" ref="queueWebApp"></property>
+        <property name="receiveTimeout" value="${im.activemq.receive.timeout}"></property>
+        <!-- 进行持久化 -->  
+        <property name="deliveryMode" value="2" />
+        
+        <!-- 非持久化配置 -->  
+<!--         <property name="deliveryMode" value="1"></property>  
+        <property name="explicitQosEnabled" value="true"></property>  -->
+    </bean>
+
+    <!--群应用 JMS模版-->
+    <bean id="jmsTemplateGroupApp" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="connectionFactory"></property>
+        <property name="defaultDestination" ref="queueGroupApp"></property>
+        <property name="receiveTimeout" value="${im.activemq.receive.timeout}"></property>
+        <!-- 进行持久化 -->  
+        <property name="deliveryMode" value="2" />
+        
+        <!-- 非持久化配置 -->  
+<!--         <property name="deliveryMode" value="1"></property>  
+        <property name="explicitQosEnabled" value="true"></property>  -->
+    </bean>
+
+    <!--群操作通知消息 JMS模版-->
+    <bean id="jmsTemplateGroupNotify" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="connectionFactory"></property>
+        <property name="defaultDestination" ref="queueGroupAction"></property>
+        <property name="receiveTimeout" value="${im.activemq.receive.timeout}"></property>
+        <!-- 进行持久化 -->
+        <property name="deliveryMode" value="2" />
+
+        <!-- 非持久化配置 -->
+        <!--         <property name="deliveryMode" value="1"></property>
+                <property name="explicitQosEnabled" value="true"></property>  -->
+    </bean>
+    
+</beans>
